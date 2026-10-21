@@ -1,4 +1,4 @@
-# Lab [Number] — [Lab or Module Title]
+# Coding Assignment 2 — Decode Stage
 <!--
 Replace every item in square brackets before submitting.
 Keep this README focused on what the design does, how it is used, and how it was
