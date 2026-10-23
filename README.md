@@ -5,25 +5,32 @@ Keep this README focused on what the design does, how it is used, and how it was
 verified.
 -->
 ## Design Scope and Assumptions
-- **In scope:** [What this lab implements]
-- **Out of scope:** [What this lab intentionally does not implement]
+- **In scope:** The purpose of this lab is to continue to the second stage of the MIPS pipeline - decode.
+- **Out of scope:** The fetch stage has already been implemented. The remaining stages of the MIPS pipeline will be implemented in future labs.
 - **Assumptions:** [Clock frequency, reset behavior, data width, memory model, or
 other assumptions]
 - **Limitations:** [Known limitations or simplified behaviors]
+- 
 ## Requirements
 | Requirement | Description | Verification Method |
 |---|---|---|
-| REQ-01 | [The design shall ...] | [Test case, waveform, calculation, or
+| Latch | Passes the data through on the clock cycle | [Test case, waveform, calculation, or
 inspection] |
-| REQ-02 | [The design shall ...] | [Test case, waveform, calculation, or
+| Register File | Consists of 32 general purpose registers. If regwrite == 1, then write the "writedata" value into the "writereg" location. Else, read the data from "read reg1" and "read reg2" as their respective "read data" | [Test case, waveform, calculation, or
 inspection] |
-| REQ-03 | [The design shall ...] | [Test case, waveform, calculation, or
+| Control | Follows the format [INSERT TABLE] | [Test case, waveform, calculation, or
 inspection] |
+| Sign Extend | Receives 16 bit immediate values and outputs 32 bits sign extended | [Test case, waveform, calculation, or
+inspection] |
+| Final ID Stage | Module with all 4 components | [Test case, waveform, calculation, or
+inspection] |
+
 ## Architecture
 ### Timing or Behavioral Summary
 Save diagrams in the repository's `images/` folder. Use relative paths so they
 display on GitHub.
 ![Timing Diagram](images/[timing-diagram-filename].png)
+
 ## Implementation
 ### Source Code
 | File | Description |
@@ -35,6 +42,7 @@ display on GitHub.
 - [Explain one important design decision.]
 - [Identify any parameterization, reusable module, or interface convention.]
 - [Document any deliberate simplification made for this lab.]
+  
 ## Verification
 ### Verification Strategy
 The design is verified using **[simulation, formal checks, hardware testing, or
@@ -54,6 +62,7 @@ The testbench source is available [*here*](LINK_TO_TESTBENCH_CODE).
 | TC-01 — [Name] | [Expected behavior] | [Observed behavior] | Pass / Fail |
 | TC-02 — [Name] | [Expected behavior] | [Observed behavior] | Pass / Fail |
 | TC-03 — [Name] | [Expected behavior] | [Observed behavior] | Pass / Fail |
+
 ## Reproduction Instructions
 ### Tools and Versions
 - **Simulator / synthesis tool:** [Name and version]
@@ -70,6 +79,7 @@ Expected output:
 ```text
 [Paste a short representative output or result here.]
 ```
+
 ## Repository Organization
 ```text
 .
