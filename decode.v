@@ -1,11 +1,12 @@
 //decode.v
 
  
-
+/* for VSCode
 `include "../src/control.v"
 `include "../src/idExLatch.v"
 `include "../src/regfile.v"
 `include "../src/signExt.v"
+*/
 
 module decode(
     input wire          clk,
