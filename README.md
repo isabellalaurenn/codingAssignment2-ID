@@ -10,7 +10,7 @@ verified.
 - **Assumptions:** [Clock frequency, reset behavior, data width, memory model, or
 other assumptions]
 - **Limitations:** [Known limitations or simplified behaviors]
-- 
+  
 ## Requirements
 | Requirement | Description | Verification Method |
 |---|---|---|
