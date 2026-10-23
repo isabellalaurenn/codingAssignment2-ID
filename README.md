@@ -18,7 +18,7 @@ other assumptions]
 inspection] |
 | Register File | Consists of 32 general purpose registers. If regwrite == 1, then write the "writedata" value into the "writereg" location. Else, read the data from "read reg1" and "read reg2" as their respective "read data" | [Test case, waveform, calculation, or
 inspection] |
-| Control | Follows the format images/controlTable.png | [Test case, waveform, calculation, or
+| Control | Follows the format ![controlTable](images/controlTable.png) | [Test case, waveform, calculation, or
 inspection] |
 | Sign Extend | Receives 16 bit immediate values and outputs 32 bits sign extended | [Test case, waveform, calculation, or
 inspection] |
