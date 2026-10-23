@@ -35,9 +35,16 @@ display on GitHub.
 ### Source Code
 | File | Description |
 |---|---|
-| [`[module].v`](LINK_TO_IMPLEMENTATION_CODE) | [Primary implementation module] |
-| [`[component].v`](LINK_TO_COMPONENT_CODE) | [Supporting component] |
-| [`[testbench].v`](LINK_TO_TESTBENCH_CODE) | [Verification testbench] |
+| [`decode.v`](https://github.com/isabellalaurenn/codingAssignment2-ID/blob/main/decode.v) | [Primary implementation module] |
+| [`idExLatch.v`](https://github.com/isabellalaurenn/codingAssignment2-ID/blob/main/idExLatch.v) | [Supporting component] |
+| [`control.v`](https://github.com/isabellalaurenn/codingAssignment2-ID/blob/main/control.v) | [Supporting component] |
+| [`regFile.v`](https://github.com/isabellalaurenn/codingAssignment2-ID/blob/main/regFile.v) | [Supporting component] |
+| [`signExt.v`](https://github.com/isabellalaurenn/codingAssignment2-ID/blob/main/signExt.v) | [Supporting component] |
+| [`decodeTB.v`](https://github.com/isabellalaurenn/codingAssignment2-ID/blob/main/decodeTB.v) | [Verification testbench] |
+| [`idExLatchTB.v`](https://github.com/isabellalaurenn/codingAssignment2-ID/blob/main/idExLatchTB.v) | [Verification testbench] |
+| [`controlTB.v`](https://github.com/isabellalaurenn/codingAssignment2-ID/blob/main/controlTB.v) | [Verification testbench] |
+| [`signExtTB.v`](https://github.com/isabellalaurenn/codingAssignment2-ID/blob/main/signExtTB.v) | [Verification testbench] |
+
 ### Implementation Notes
 - [Explain one important design decision.]
 - [Identify any parameterization, reusable module, or interface convention.]
