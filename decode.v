@@ -37,57 +37,56 @@ module decode(
 
 
     signExtend sE0(
-        //COMPLETE PARAMETERS
         .immediate(if_id_instr[15:0]),
         .extended(sign_ext_internal)
     );
 
     regfile rf0(
-        //COMPLETE PARAMETERS
-        .clk(),
-        .rst(),
-        .regwrite(),
-        .rs(),
-        .rt(),
-        .rd(),
-        .writedata(),
-        .A_readdat1(),
-        .B_readdat2()
+        .clk(clk),
+        .rst(rst),
+        .regwrite(wb_reg_write),
+        .rs(if_id_instr[25:21]),
+        .rt(if_id_instr[20:16]),
+        .rd(wb_write_reg_location),
+        .writedata(mem_wb_write_data),
+        .A_readdat1(readdat1_internal),
+        .B_readdat2(readdat2_internal)
     );
 
     control c0(
-         //COMPLETE PARAMETERS
-        .clk(),
-        .rst(),
-        .opcode(),
-        .wb(),
-        .mem(),
-        .ex()
+        .clk(clk),
+        .rst(rst),
+        .opcode(if_id_instr[31:26]),
+        .wb(wb_internal),
+        .mem(mem_internal),
+        .ex(ex_internal)
     ); 
 
     idExLatch iEL0(
-         //COMPLETE PARAMETERS
-        .clk(),                                  //inputs
-        .rst(),
-        .ctl_wb(),
-        .ctl_mem(),
-        .ctl_ex(),
-        .npc(),
-        .readdat1(),
-        .readdat2(),
-        .sign_ext(),
-        .instr_bits_20_16(),
-        .instr_bits_15_11(),
-                                                    //outputs
-        .wb_out(),
-        .mem_out(),
-        .ctl_out(),
-        .npc_out(),
-        .readdat1_out(),
-        .readdat2_out(),
-        .sign_ext_out(),
-        .instr_bits_20_16_out(),
-        .instr_bits_15_11_out()
+        //inputs
+        .clk(clk),                               
+        .rst(rst),
+        .ctl_wb(wb_internal),
+        .ctl_mem(mem_internal),
+        .ctl_ex(ex_internal),
+        .npc(if_id_npc),
+        .readdat1(readdat1_internal),
+        .readdat2(readdat2_internal),
+        .sign_ext(sign_ext_internal),
+        .instr_bits_20_16(if_id_instr[20:16]),
+        .instr_bits_15_11(if_id_instr[15:11]),
+        //outputs                                 
+        .wb_out(id_ex_wb),
+        .mem_out(id_ex_mem),
+        .ctl_out(id_ex_execute),
+        .npc_out(id_ex_npc),
+        .readdat1_out(id_ex_readdat1),
+        .readdat2_out(_id_ex_readdat2),
+        .sign_ext_out(id_ex_sign_ext),
+        .instr_bits_20_16_out(id_ex_instr_bits_20_16),
+        .instr_bits_15_11_out(id_ex_instr_bits_15_11)
     );
+
+endmodule
 
 endmodule
