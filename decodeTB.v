@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module decodeTB(
   );
   reg clk_tb,
@@ -10,7 +11,7 @@ module decodeTB(
   wire [1:0] id_ex_wb_tb;
   wire [2:0] id_ex_mem_tb;
   wire [3:0] id_ex_execute_tb;
-  wire [31:0] id_ex-npc_tb,
+  wire [31:0] id_ex_npc_tb,
               id_ex_readdat1_tb,
               id_ex_readdat2_tb,
               id_ex_sign_ext_tb;
@@ -32,7 +33,7 @@ decode DUT (
   .id_ex_readdat2(id_ex_readdat2_tb),
   .id_ex_sign_ext(id_ex_sign_ext_tb),
   .id_ex_instr_bits_20_16(id_ex_instr_bits_20_16_tb),
-  .id_ex_bits_15_11(id_ex_bits_15_11_tb)
+  .id_ex_instr_bits_15_11(id_ex_bits_15_11_tb)
 
   );
 
@@ -96,4 +97,4 @@ decode DUT (
     
   end
 
-end module
+endmodule
