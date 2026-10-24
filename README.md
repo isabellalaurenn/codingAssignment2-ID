@@ -1,102 +1,174 @@
 # Coding Assignment 2 — Decode Stage
-<!--
-Replace every item in square brackets before submitting.
-Keep this README focused on what the design does, how it is used, and how it was
-verified.
--->
+
 ## Design Scope and Assumptions
-- **In scope:** The purpose of this lab is to continue to the second stage of the MIPS pipeline - decode.
-- **Out of scope:** The fetch stage has already been implemented. The remaining stages of the MIPS pipeline will be implemented in future labs.
-- **Assumptions:** [Clock frequency, reset behavior, data width, memory model, or
-other assumptions]
-- **Limitations:** [Known limitations or simplified behaviors]
-  
+
+- **In scope:** Implement the Instruction Decode (ID) stage of the MIPS pipeline, including the control unit, register file, sign extender, and ID/EX pipeline register.
+- **Out of scope:** The fetch stage was implemented separately. Execute, memory access, and writeback stages will be implemented in future assignments. Writeback inputs are supplied by the testbench.
+- **Assumptions:** Instructions and data are 32 bits wide, register addresses are 5 bits, and immediate values are 16 bits. The testbench clock toggles every 1 ns, giving a 2 ns period. Clocked modules update on rising edges. Reset is active high. NPC values follow the professor’s PC + 1 convention and are supplied directly by the testbench.
+- **Limitations:** Only R-format, LW, SW, and BEQ control decoding is implemented. The register file reads only when regwrite is low and uses clocked read outputs. Only registers 0–9 are initialized. No stall, flush, forwarding, or hazard-detection logic is implemented.
+
 ## Requirements
+
 | Requirement | Description | Verification Method |
 |---|---|---|
-| Latch | Passes the data through on the clock cycle | [Test case, waveform, calculation, or
-inspection] |
-| Register File | Consists of 32 general purpose registers. If regwrite == 1, then write the "writedata" value into the "writereg" location. Else, read the data from "read reg1" and "read reg2" as their respective "read data" | [Test case, waveform, calculation, or
-inspection] |
-| Control | Follows the format ![controlTable](images/controlTable.png) | [Test case, waveform, calculation, or
-inspection] |
-| Sign Extend | Receives 16 bit immediate values and outputs 32 bits sign extended | [Test case, waveform, calculation, or
-inspection] |
-| Final ID Stage | Module with all 4 components | [Test case, waveform, calculation, or
-inspection] |
+| Latch | Stores control signals, NPC, register data, sign-extended immediate, and instruction register fields | Waveform: ID/EX outputs capture inputs on rising clock edges and clear on reset |
+| Register File | Contains 32 registers. Writes writedata into rd when regwrite is high; otherwise reads rs and rt | Waveform: observe initialized register values and read register 2 after writing 32'h00000064 |
+| Control | Generates the required control signals for R-format, LW, SW, and BEQ | Waveform: compare control outputs against the control table |
+| Sign Extend | Extends a 16-bit immediate to 32 bits by repeating its sign bit | Waveform: compare the instruction’s immediate field with id_ex_sign_ext |
+| Final ID Stage | Connects all four components | Behavioral simulation using decodeTB.v |
+
+![Control Table](images/controlTable.png)
 
 ## Architecture
+
 ### Timing or Behavioral Summary
-Save diagrams in the repository's `images/` folder. Use relative paths so they
-display on GitHub.
-![Timing Diagram](images/[timing-diagram-filename].png)
+
+The instruction input is divided into fields. Bits [31:26] provide the opcode to the control unit. Bits [25:21] and [20:16] select the two source registers. Bits [15:0] enter the sign extender.
+
+The control unit generates three buses:
+
+- wb[1:0] = {RegWrite, MemToReg}
+- mem[2:0] = {Branch, MemRead, MemWrite}
+- ex[3:0] = {RegDst, ALUOp[1:0], ALUSrc}
+
+The ID/EX pipeline register captures these control buses, NPC, both register-file outputs, the sign-extended immediate, and instruction fields [20:16] and [15:11].
+
+The register file and ID/EX register both update on rising clock edges. Because they use nonblocking assignments, the ID/EX register captures the previous register-file outputs at each edge. An instruction must remain stable through two rising edges to observe its corresponding register data at the ID/EX outputs with this implementation.
 
 ## Implementation
+
 ### Source Code
+
 | File | Description |
 |---|---|
-| [`decode.v`](https://github.com/isabellalaurenn/codingAssignment2-ID/blob/main/decode.v) | [Primary implementation module] |
-| [`idExLatch.v`](https://github.com/isabellalaurenn/codingAssignment2-ID/blob/main/idExLatch.v) | [Supporting component] |
-| [`control.v`](https://github.com/isabellalaurenn/codingAssignment2-ID/blob/main/control.v) | [Supporting component] |
-| [`regFile.v`](https://github.com/isabellalaurenn/codingAssignment2-ID/blob/main/regFile.v) | [Supporting component] |
-| [`signExt.v`](https://github.com/isabellalaurenn/codingAssignment2-ID/blob/main/signExt.v) | [Supporting component] |
-| [`decodeTB.v`](https://github.com/isabellalaurenn/codingAssignment2-ID/blob/main/decodeTB.v) | [Verification testbench] |
-| [`idExLatchTB.v`](https://github.com/isabellalaurenn/codingAssignment2-ID/blob/main/idExLatchTB.v) | [Verification testbench] |
-| [`controlTB.v`](https://github.com/isabellalaurenn/codingAssignment2-ID/blob/main/controlTB.v) | [Verification testbench] |
-| [`signExtTB.v`](https://github.com/isabellalaurenn/codingAssignment2-ID/blob/main/signExtTB.v) | [Verification testbench] |
+| [decode.v](decode.v) | Top-level decode stage connecting all four components |
+| [idExLatch.v](idExLatch.v) | Pipeline register storing data and control signals for the execute stage |
+| [control.v](control.v) | Combinational opcode decoder |
+| [regFile.v](regFile.v) | Register file containing 32 registers, each 32 bits wide |
+| [signExt.v](signExt.v) | Combinational 16-to-32-bit sign extender |
+| [decodeTB.v](decodeTB.v) | Testbench for the complete decode stage |
+| [idExLatchTB.v](idExLatchTB.v) | Individual testbench for pipeline-register capture, hold, and reset behavior |
+| [controlTB.v](controlTB.v) | Individual testbench for control decoding and unsupported opcodes |
+| [signExtTB.v](signExtTB.v) | Individual testbench for positive and negative sign extension |
 
 ### Implementation Notes
-- [Explain one important design decision.]
-- [Identify any parameterization, reusable module, or interface convention.]
-- [Document any deliberate simplification made for this lab.]
-  
+
+- The control unit is combinational. Its clk input is retained to match the provided interface.
+- Control signals marked X in the assignment table are assigned 0 because their values do not affect the corresponding instruction.
+- Unsupported opcodes produce zero control outputs, disabling register and memory writes.
+- The ID/EX register uses nonblocking assignments and an asynchronous active-high reset.
+- The register file resets its read outputs synchronously; reset does not clear its stored register contents.
+- NPC is passed through the decode stage without incrementing it.
+- Writeback inputs are driven directly by the testbench because the writeback stage is not implemented.
+
 ## Verification
+
 ### Verification Strategy
-The design is verified using **[simulation, formal checks, hardware testing, or
-another method]**.
-Verification covers:
-- [Normal operating case]
-- [Boundary or maximum-value case]
-- [Reset or initialization case]
-- [Invalid, stalled, or exceptional case, if applicable]
+
+The design is verified using **behavioral simulation and waveform inspection**.
+
+The full-stage testbench exercises:
+
+- Reset and initialization.
+- R-format, BEQ, LW, and SW instruction decoding.
+- Register reads from initialized locations.
+- Writing 32'h00000064 to register 2 and subsequently reading it.
+- Passing NPC and instruction fields through the ID/EX register.
+
+Individual testbenches provide additional checks for:
+
+- Unsupported opcodes producing zero control outputs.
+- ID/EX outputs holding their values between rising edges.
+- Asynchronous reset of the ID/EX register.
+- Positive and negative immediate sign extension.
+
+The provided full-stage instruction sequence does not test negative immediate sign extension or register addresses 10–31.
+
 ### Testbench and Waveform
-Save screenshots and waveform images in the repository's `images/` folder.
-![Testbench or waveform](images/[testbench-screenshot-filename].png)
-The testbench source is available [*here*](LINK_TO_TESTBENCH_CODE).
+
+![Decode Stage Waveform](images/waveform.png)
+
+The full-stage testbench source is available [here](decodeTB.v).
+
+Control outputs are expected to follow this table after capture by the ID/EX register:
+
+| Instruction | Opcode | id_ex_wb | id_ex_mem | id_ex_execute |
+|---|---|---|---|---|
+| R-format | 000000 | 10 | 000 | 1100 |
+| LW | 100011 | 11 | 010 | 0001 |
+| SW | 101011 | 00 | 001 | 0001 |
+| BEQ | 000100 | 00 | 100 | 0010 |
+
 ### Results
+
 | Test Case | Expected Result | Observed Result | Status |
 |---|---|---|---|
-| TC-01 — [Name] | [Expected behavior] | [Observed behavior] | Pass / Fail |
-| TC-02 — [Name] | [Expected behavior] | [Observed behavior] | Pass / Fail |
-| TC-03 — [Name] | [Expected behavior] | [Observed behavior] | Pass / Fail |
+| TC-01 — Reset | ID/EX outputs clear to zero while reset is asserted | Awaiting full-stage waveform review | Pending |
+| TC-02 — Instruction Control | R-format, LW, SW, and BEQ produce the control values listed above | Awaiting full-stage waveform review | Pending |
+| TC-03 — NPC and Register Fields | ID/EX outputs capture the supplied NPC and instruction fields on rising edges | Awaiting full-stage waveform review | Pending |
+| TC-04 — Immediate Extension | LW and SW immediate 16'h0002 becomes 32'h00000002 | Awaiting full-stage waveform review | Pending |
+| TC-05 — Register Write and Read | After writing register 2, the final ADD reads 32'h00000064 on both data outputs after the required clock edges | Awaiting full-stage waveform review | Pending |
 
 ## Reproduction Instructions
+
 ### Tools and Versions
-- **Simulator / synthesis tool:** [Name and version]
-- **Language / standard:** [Verilog/SystemVerilog version]
-- **Operating system:** [macOS, Windows, Linux, or other]
-- **Additional dependencies:** [List any required tools or libraries]
+
+- **Simulator / synthesis tool:** Vivado
+- **Language / standard:** Verilog
+- **Operating system:** Windows
+- **Additional dependencies:** None
+
 ### Build and Run
-```bash
-# Replace these commands with the commands required for this lab.
-[compile-command]
-[run-command]
-```
-Expected output:
+
+1. Create an RTL project in Vivado.
+2. Add decode.v, control.v, idExLatch.v, regFile.v, and signExt.v as Design Sources.
+3. Set decode as the design top.
+4. Add decodeTB.v as a Simulation Source.
+5. Set decodeTB as the simulation top.
+6. Run Behavioral Simulation.
+7. Use Zoom Fit and inspect the input and ID/EX output signals.
+8. Save the waveform screenshot as images/waveform.png.
+
+Individual testbenches can also be added as Simulation Sources and selected as the simulation top for separate checks.
+
+Expected behavior:
+
 ```text
-[Paste a short representative output or result here.]
+Reset clears the ID/EX outputs.
+Instruction opcodes produce the expected control buses.
+NPC and instruction fields are captured on rising edges.
+Immediate fields are sign extended to 32 bits.
+Register 2 stores 00000064 when writeback is enabled.
+The final ADD reads 00000064 on both register-data outputs
+after the required clock edges.
 ```
 
+The decodeTB message "Decode Complete" indicates that the stimulus
+sequence finished; it does not automatically verify output correctness.
+
 ## Repository Organization
+
 ```text
 .
 ├── README.md
 ├── images/
-│ ├── [timing-diagram-filename].png
-│ └── [testbench-screenshot-filename].png
-├── [source-files]
-└── [testbench-files]
+│   ├── controlTable.png
+│   └── waveform.png
+├── decode.v
+├── idExLatch.v
+├── control.v
+├── regFile.v
+├── signExt.v
+├── decodeTB.v
+├── idExLatchTB.v
+├── controlTB.v
+└── signExtTB.v
 ```
+
 ## Known Issues and Future Improvements
-- [Document any known issue, unverified behavior, or technical debt.]
-- [Describe a realistic improvement or extension.]
+
+- Clocked register reads introduce an additional edge of delay before matching register data reaches ID/EX. Holding instructions for two cycles permits settled-value testing but does not support correctly aligned instruction data at one new instruction per cycle.
+- Registers 10–31 are uninitialized and may produce unknown values when read.
+- Register 0 contains dummy data and is writable in this implementation; standard MIPS instead requires register 0 to remain zero.
+- The full-stage testbench requires manual waveform inspection. Future improvements could add automatic output checks.
+- Future pipeline integration should resolve register-read timing and add the required hazard, stall, flush, and forwarding behavior.
