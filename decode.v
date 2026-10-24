@@ -36,12 +36,12 @@ module decode(
     wire [3:0] ex_internal;
 
 
-    signExtend sE0(
+    signExt sE0(
         .immediate(if_id_instr[15:0]),
         .extended(sign_ext_internal)
     );
 
-    regfile rf0(
+    regFile rf0(
         .clk(clk),
         .rst(rst),
         .regwrite(wb_reg_write),
@@ -81,12 +81,10 @@ module decode(
         .ctl_out(id_ex_execute),
         .npc_out(id_ex_npc),
         .readdat1_out(id_ex_readdat1),
-        .readdat2_out(_id_ex_readdat2),
+        .readdat2_out(id_ex_readdat2),
         .sign_ext_out(id_ex_sign_ext),
         .instr_bits_20_16_out(id_ex_instr_bits_20_16),
         .instr_bits_15_11_out(id_ex_instr_bits_15_11)
     );
-
-endmodule
 
 endmodule
