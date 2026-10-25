@@ -33,7 +33,7 @@ The control unit generates three buses:
 
 The ID/EX pipeline register captures these control buses, NPC, both register-file outputs, the sign-extended immediate, and instruction fields [20:16] and [15:11].
 
-The register file and ID/EX register both update on rising clock edges. Because they use nonblocking assignments, the ID/EX register captures the previous register-file outputs at each edge. An instruction must remain stable through two rising edges to observe its corresponding register data at the ID/EX outputs with this implementation.
+The register file and ID/EX register both update on rising clock edges. Because they use nonblocking assignments, the ID/EX register captures the previous register-file outputs at each edge. Consequently, register-read data reaches ID/EX one clock cycle later than the corresponding control signals, NPC, and instruction fields. The current testbench retains its original instruction timing; it does not hold every instruction for two cycles. The final ADD remains present long enough for both register-data outputs to reach 32'h00000064.
 
 ## Implementation
 
@@ -86,9 +86,13 @@ The provided full-stage instruction sequence does not test negative immediate si
 
 ### Testbench and Waveform
 
-![Decode Stage Waveform](images/waveform.png)
+![Decode Stage Waveform]
+<img width="2314" height="848" alt="image" src="https://github.com/user-attachments/assets/976c70e4-1ae0-4db8-9d85-6978b43dc279" />
+
 
 The full-stage testbench source is available [here](decodeTB.v).
+
+The waveform displays data and control buses in hexadecimal. For example, control values 2, 3, 4, and C correspond to binary 10, 11, 100, and 1100, respectively. At 15 ns, both id_ex_readdat1_tb and id_ex_readdat2_tb become 32'h00000064, confirming that the final ADD reads the updated register 2 value through both read ports.
 
 Control outputs are expected to follow this table after capture by the ID/EX register:
 
@@ -103,11 +107,12 @@ Control outputs are expected to follow this table after capture by the ID/EX reg
 
 | Test Case | Expected Result | Observed Result | Status |
 |---|---|---|---|
-| TC-01 — Reset | ID/EX outputs clear to zero while reset is asserted | Awaiting full-stage waveform review | Pending |
-| TC-02 — Instruction Control | R-format, LW, SW, and BEQ produce the control values listed above | Awaiting full-stage waveform review | Pending |
-| TC-03 — NPC and Register Fields | ID/EX outputs capture the supplied NPC and instruction fields on rising edges | Awaiting full-stage waveform review | Pending |
-| TC-04 — Immediate Extension | LW and SW immediate 16'h0002 becomes 32'h00000002 | Awaiting full-stage waveform review | Pending |
-| TC-05 — Register Write and Read | After writing register 2, the final ADD reads 32'h00000064 on both data outputs after the required clock edges | Awaiting full-stage waveform review | Pending |
+| TC-01 — Reset | ID/EX outputs clear to zero while reset is asserted | Displayed ID/EX outputs are zero during reset from 0–2 ns | Pass |
+| TC-02 — Instruction Control | R-format, LW, SW, and BEQ produce the specified control values | Hexadecimal (wb, mem, execute) values are (2, 0, C) for R-format, (3, 2, 1) for LW, (0, 1, 1) for SW, and (0, 4, 2) for BEQ | Pass |
+| TC-03 — NPC and Register Fields | ID/EX outputs capture the supplied NPC and instruction fields on rising edges | NPC values 1–6 and the corresponding register fields appear after rising clock edges | Pass |
+| TC-04 — Immediate Extension | LW and SW immediate 16'h0002 becomes 32'h00000002 | id_ex_sign_ext_tb shows 00000002 for LW and SW | Pass |
+| TC-05 — Register Write and Read | After writing register 2, the final ADD reads 32'h00000064 through both data outputs | Both ID/EX register-data outputs become 00000064 at 15 ns | Pass |
+| TC-06 — Instruction/Data Alignment | Register data and control signals at ID/EX should correspond to the same instruction | Register data arrives one clock cycle later than the corresponding control signals | Known limitation |
 
 ## Reproduction Instructions
 
@@ -167,7 +172,7 @@ sequence finished; it does not automatically verify output correctness.
 
 ## Known Issues and Future Improvements
 
-- Clocked register reads introduce an additional edge of delay before matching register data reaches ID/EX. Holding instructions for two cycles permits settled-value testing but does not support correctly aligned instruction data at one new instruction per cycle.
+- Clocked register reads introduce a one-cycle delay relative to the control signals, NPC, and instruction fields captured by ID/EX. The submitted testbench keeps the original instruction waits, so intermediate outputs can combine one instruction’s control signals with the preceding instruction’s register data. The final register-write/read test reaches the expected values, but continuous instruction/data alignment remains unresolved.
 - Registers 10–31 are uninitialized and may produce unknown values when read.
 - Register 0 contains dummy data and is writable in this implementation; standard MIPS instead requires register 0 to remain zero.
 - The full-stage testbench requires manual waveform inspection. Future improvements could add automatic output checks.
