@@ -86,7 +86,7 @@ The provided full-stage instruction sequence does not test negative immediate si
 
 ### Testbench and Waveform
 
-![Decode Stage Waveform]
+[Decode Stage Waveform]
 <img width="2314" height="848" alt="image" src="https://github.com/user-attachments/assets/976c70e4-1ae0-4db8-9d85-6978b43dc279" />
 
 
